@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id    String @id @default(uuid())
+  nome  String
+  login Int
+  senha String
+  tipo  Int
+
+  Empresa         Empresa[]
+  EmpresasUsuario EmpresaUsuario[]
+
+  @@map("usuarios")
+}
+
+model Empresa {
+  id         String @id @default(uuid())
+  nome       String
+  endereco   String
+  usuario_id String
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+
+  ContatoEmpresa  ContatoEmpresa[]
+  EmpresasUsuario EmpresaUsuario[]
+  Funcionario     Funcionario[]
+  Servico         Servico[]
+
+  @@map("empresas")
+}
+
+model ContatoEmpresa {
+  id         String @id @default(uuid())
+  numero     String
+  empresa_id String
+
+  empresa Empresa @relation(fields: [empresa_id], references: [id])
+
+  @@unique([numero, empresa_id])
+  @@map("contatosempresa")
+}
+
+model EmpresaUsuario {
+  empresa_id String
+  usuario_id String
+
+  empresa Empresa @relation(fields: [empresa_id], references: [id])
+  usuario Usuario @relation(fields: [usuario_id], references: [id])
+
+  @@id([empresa_id, usuario_id])
+  @@map("empresasusuario")
+}
+
+model Funcionario {
+  id         String  @id @default(uuid())
+  nome       String
+  ativo      Boolean @default(true)
+  empresa_id String
+
+  empresa            Empresa              @relation(fields: [empresa_id], references: [id])
+  ServicoFuncionario ServicoFuncionario[]
+
+  @@map("funcionarios")
+}
+
+model Servico {
+  id         String  @id @default(uuid())
+  descricao  String  @unique
+  ativo      Boolean @default(true)
+  duracao    Int
+  valor      Float
+  empresa_id String
+
+  empresa            Empresa              @relation(fields: [empresa_id], references: [id])
+  ServicoFuncionario ServicoFuncionario[]
+
+  @@map("servicos")
+}
+
+model ServicoFuncionario {
+  servico_id     String
+  funcionario_id String
+  ativo          Boolean @default(true)
+
+  servico     Servico     @relation(fields: [servico_id], references: [id])
+  funcionario Funcionario @relation(fields: [funcionario_id], references: [id])
+
+  @@id([servico_id, funcionario_id])
+  @@map("servicosfuncionario")
+}
