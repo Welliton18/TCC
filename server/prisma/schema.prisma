@@ -19,6 +19,7 @@ model Usuario {
 
   Empresa         Empresa[]
   EmpresasUsuario EmpresaUsuario[]
+  Agendamento     Agendamento[]
 
   @@map("usuarios")
 }
@@ -67,7 +68,8 @@ model Funcionario {
   ativo      Boolean @default(true)
   empresa_id String
 
-  empresa            Empresa              @relation(fields: [empresa_id], references: [id])
+  empresa Empresa @relation(fields: [empresa_id], references: [id])
+
   ServicoFuncionario ServicoFuncionario[]
 
   @@map("funcionarios")
@@ -77,24 +79,40 @@ model Servico {
   id         String  @id @default(uuid())
   descricao  String  @unique
   ativo      Boolean @default(true)
-  duracao    Int
-  valor      Float
   empresa_id String
 
-  empresa            Empresa              @relation(fields: [empresa_id], references: [id])
+  empresa Empresa @relation(fields: [empresa_id], references: [id])
+
   ServicoFuncionario ServicoFuncionario[]
 
   @@map("servicos")
 }
 
 model ServicoFuncionario {
+  id             String  @id @default(uuid())
   servico_id     String
   funcionario_id String
   ativo          Boolean @default(true)
+  duracao        Int
+  valor          Float
 
   servico     Servico     @relation(fields: [servico_id], references: [id])
   funcionario Funcionario @relation(fields: [funcionario_id], references: [id])
 
-  @@id([servico_id, funcionario_id])
+  Agendamento Agendamento[]
+
+  @@unique([servico_id, funcionario_id])
   @@map("servicosfuncionario")
+}
+
+model Agendamento {
+  id              String   @id @default(uuid())
+  data            DateTime
+  usuario_id      String
+  servico_func_id String
+
+  usuario            Usuario            @relation(fields: [usuario_id], references: [id])
+  servicoFuncionario ServicoFuncionario @relation(fields: [servico_func_id], references: [id])
+
+  @@map("agendamentos")
 }
